@@ -1,0 +1,24 @@
+# Nix/dev env artifacts
+result
+result-*/
+.direnv/
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Node (if present)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Rust (if present)
+target/
+
+# Env files (if used locally)
+.env
+.env.local
