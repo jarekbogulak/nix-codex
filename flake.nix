@@ -6,8 +6,8 @@
     # Track the Codex source as a non-flake input so updates are just
     # changes to the lockfile (no manual sha256 handling).
     codex-src = {
-      # Default to main; to pin a release, change to e.g. github:openai/codex?ref=vX.Y.Z
-      url = "github:openai/codex?ref=main";
+      # Pinned to Codex CLI v0.30.0 release
+      url = "github:openai/codex?ref=v0.30.0";
       flake = false;
     };
   };
@@ -26,7 +26,7 @@
       # Define the package derivation as a function of `pkgs` to avoid repetition.
       mkCodexCli = pkgs: pkgs.stdenv.mkDerivation rec {
         pname = "codex-cli";
-        version = "unstable";
+        version = "0.30.0";
 
         # Use the flake input for source; pinned via flake.lock
         src = codex-src;
