@@ -6,7 +6,7 @@
     # Track the Codex source as a non-flake input so updates are just
     # changes to the lockfile (no manual sha256 handling).
     codex-src = {
-      # Default to main; to pin a release, change to e.g. github:openai/codex?ref=vX.Y.Z
+      # Track latest Codex on main for continuous updates.
       url = "github:openai/codex?ref=main";
       flake = false;
     };

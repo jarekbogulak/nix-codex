@@ -1,0 +1,43 @@
+name: Update Codex
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Daily at 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Enable Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Update codex-src lock input
+        run: nix flake lock --update-input codex-src
+
+      - name: Build codex-cli to verify
+        run: nix build .#codex-cli
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update flake.lock for codex-src"
+          title: "chore: update codex-src (flake.lock)"
+          body: |
+            Automated update of `flake.lock` for `codex-src`.
+            - Tracks `openai/codex` `main`
+            - Built `.#codex-cli` successfully on Ubuntu runner
+          branch: automation/update-codex-src
+          labels: automation,nix
+          delete-branch: true
+
