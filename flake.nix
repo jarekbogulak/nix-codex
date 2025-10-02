@@ -6,8 +6,8 @@
     # Track the Codex source as a non-flake input so updates are just
     # changes to the lockfile (no manual sha256 handling).
     codex-src = {
-      # Pin to Rust CLI release 0.41.0
-      url = "github:openai/codex?ref=rust-v0.41.0";
+      # Pin to Rust CLI release 0.42.0
+      url = "github:openai/codex?ref=rust-v0.42.0";
       flake = false;
     };
   };
@@ -26,7 +26,7 @@
       # Define the package derivation as a function of `pkgs` to avoid repetition.
       mkCodexCli = pkgs: pkgs.stdenv.mkDerivation rec {
         pname = "codex-cli";
-        version = "0.41.0";
+        version = "0.42.0";
 
         # Use the flake input for source; pinned via flake.lock
         src = codex-src;
@@ -57,9 +57,11 @@
           cp -r codex-cli/* $out/lib/codex-cli/
           # Ensure the entrypoint exists and is executable
           chmod +x $out/lib/codex-cli/bin/codex.js || true
-          # Place the native binary where the JS wrapper expects it
+          # Install the native binary in both the bin/ convenience location and the vendor/ layout used by the JS wrapper
           triple=${pkgs.stdenv.hostPlatform.config}
-          install -D -m 755 codex-rs/target/release/codex "$out/lib/codex-cli/bin/codex-$triple"
+          nativeBinary="codex-rs/target/release/codex"
+          install -D -m 755 "$nativeBinary" "$out/lib/codex-cli/bin/codex-$triple"
+          install -D -m 755 "$nativeBinary" "$out/lib/codex-cli/vendor/$triple/codex/codex"
           # Add compatibility symlinks for triples expected by the JS wrapper
           (
             cd "$out/lib/codex-cli/bin"
@@ -75,6 +77,21 @@
               ln -s codex-aarch64-unknown-linux-gnu codex-aarch64-unknown-linux-musl
             fi
           )
+          if [ -d "$out/lib/codex-cli/vendor" ]; then
+            (
+              cd "$out/lib/codex-cli/vendor"
+              # Mirror the bin/ compatibility symlinks so the Node wrapper finds the native binary
+              if [ -d arm64-apple-darwin ] && [ ! -e aarch64-apple-darwin ]; then
+                ln -s arm64-apple-darwin aarch64-apple-darwin
+              fi
+              if [ -d x86_64-unknown-linux-gnu ] && [ ! -e x86_64-unknown-linux-musl ]; then
+                ln -s x86_64-unknown-linux-gnu x86_64-unknown-linux-musl
+              fi
+              if [ -d aarch64-unknown-linux-gnu ] && [ ! -e aarch64-unknown-linux-musl ]; then
+                ln -s aarch64-unknown-linux-gnu aarch64-unknown-linux-musl
+              fi
+            )
+          fi
           # Create a wrapper for the CLI
           makeWrapper ${pkgs.nodejs}/bin/node $out/bin/codex \
             --add-flags "$out/lib/codex-cli/bin/codex.js"
