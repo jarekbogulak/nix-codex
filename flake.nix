@@ -6,8 +6,8 @@
     # Track the Codex source as a non-flake input so updates are just
     # changes to the lockfile (no manual sha256 handling).
     codex-src = {
-      # Pin to Rust CLI release 0.60.1
-      url = "github:openai/codex?ref=rust-v0.61.0";
+      # Pin to Rust CLI release 0.66.0
+      url = "github:openai/codex?ref=rust-v0.66.0";
       flake = false;
     };
   };
@@ -26,7 +26,7 @@
       # Define the package derivation as a function of `pkgs` to avoid repetition.
       mkCodexCli = pkgs: pkgs.stdenv.mkDerivation rec {
         pname = "codex-cli";
-        version = "0.61.0";
+        version = "0.66.0";
 
         # Use the flake input for source; pinned via flake.lock
         src = codex-src;
